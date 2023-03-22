@@ -1,90 +1,64 @@
-struct BinaryLifting {
-	int n;
-	int maxLog;
-	ll maxRequirement;
-	vector<vector<int>> parent;
-
-	BinaryLifting(int n1, vector<vector<int>>&edges, ll requirement, int root) {
-		n = n1;
-		parent.resize(n);
-		maxLog = log2(requirement + 1);
-		maxRequirement = requirement;
-		for (int i = 0; i < n; i++) {
-			parent[i].resize(maxLog + 1);
-			for (int j = 0; j <= maxLog; j++) {
-				parent[i][j] = -1;
-			}
-		}
-		fillParentTable(root, edges);
-
-	}
-	void fillParentTable(int root, vector<vector<int>> &edges) {
-		vector<bool> visited(n);
-		dfsBinaryLifting(root, edges, visited);
-		int intermediate = -1;
-		for (int i = 1; i <= maxLog; i++) {
-			for (int j = 0; j < n; j++) {
-				intermediate = parent[j][i - 1];
-				if (intermediate != -1) {
-					parent[j][i] = parent[intermediate][i - 1];
-				}
-			}
-		}
-	}
-	void dfsBinaryLifting(int root, vector<vector<int>> &edges, vector<bool> &visited) {
-		visited[root] = true;
-		for (auto i : edges[root]) {
-			if (!visited[i]) {
-				parent[i][0] = root;
-				dfsBinaryLifting(i, edges, visited);
-			}
-		}
-	}
-
-	int kthParent(int x, int k) {
-		for (int i = 0; i <= maxLog; i++) {
-			if ((k >> i) & 1) {
-				if (x == -1)
-					return x;
-				x = parent[x][i];
-			}
-		}
-		return x;
-	}
-
-};
-
 struct LCA {
-	int n;
-	vector<int> level;
-	LCA(int n1, vector<vector<int>> &edges, int root) {
-		n = n1;
-		level.resize(n);
-		dfsLCA(root, edges, -1);
-	}
-	void dfsLCA(int root, vector<vector<int>> &edges, int parent) {
-		for (auto i : edges[root]) {
-			if (i != parent) {
-				level[i] = level[root] + 1;
-				dfsLCA(i, edges, root);
-			}
-		}
-	}
-	int getLCA(int a, int b, BinaryLifting &bl_object) {
-		if (level[a] > level[b]) {
-			swap(a, b);
-		}
-		b = bl_object.kthParent(b, level[b] - level[a]);
-		if (a == b)
-			return a;
-		for (int i = bl_object.maxLog; i >= 0; i--) {
-			int parent1 = bl_object.parent[a][i];
-			int parent2 = bl_object.parent[b][i];
-			if (parent2 != parent1 && parent1 != -1 && parent2 != -1) {
-				a = parent1;
-				b = parent2;
-			}
-		}
-		return bl_object.parent[a][0];
-	}
+    vector<int> height, euler, first, segtree;
+    vector<bool> visited;
+    int n;
+ 
+    LCA(vector<vector<int>> &adj, int root = 0) {
+        n = adj.size();
+        height.resize(n);
+        first.resize(n);
+        euler.reserve(n * 2);
+        visited.assign(n, false);
+        dfs(adj, root);
+        int m = euler.size();
+        segtree.resize(m * 4);
+        build(1, 0, m - 1);
+    }
+ 
+    void dfs(vector<vector<int>> &adj, int node, int h = 0) {
+        visited[node] = true;
+        height[node] = h;
+        first[node] = euler.size();
+        euler.push_back(node);
+        for (auto to : adj[node]) {
+            if (!visited[to]) {
+                dfs(adj, to, h + 1);
+                euler.push_back(node);
+            }
+        }
+    }
+ 
+    void build(int node, int b, int e) {
+        if (b == e) {
+            segtree[node] = euler[b];
+        } else {
+            int mid = (b + e) / 2;
+            build(node << 1, b, mid);
+            build(node << 1 | 1, mid + 1, e);
+            int l = segtree[node << 1], r = segtree[node << 1 | 1];
+            segtree[node] = (height[l] < height[r]) ? l : r;
+        }
+    }
+ 
+    int query(int node, int b, int e, int L, int R) {
+        if (b > R || e < L)
+            return -1;
+        if (b >= L && e <= R)
+            return segtree[node];
+        int mid = (b + e) >> 1;
+ 
+        int left = query(node << 1, b, mid, L, R);
+        int right = query(node << 1 | 1, mid + 1, e, L, R);
+        if (left == -1) return right;
+        if (right == -1) return left;
+        return height[left] < height[right] ? left : right;
+    }
+ 
+    int lca(int u, int v) {
+        int left = first[u], right = first[v];
+        if (left > right)
+            swap(left, right);
+        return query(1, 0, euler.size() - 1, left, right);
+    }
 };
+ 
