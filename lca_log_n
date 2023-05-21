@@ -37,6 +37,8 @@ vector<vector<int>>dp(2e5 + 5, vector<int>(31));
 		if (level[u] < level[v])
 			swap(u, v);
 		u = query(u, level[u] - level[v]); //lift kia u ko v tk ab woh same level pe h
+		if (u == v)
+			return u;
 for (int i = 30; i >= 0; i--)
 		{
 			if (dp[u][i] != dp[v][i])
