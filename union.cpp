@@ -1,5 +1,5 @@
-vector<int>parent(1e5 + 4);
-vector<int>rankk(1e5 + 4);
+ vector<int>parent;
+    vector<int>rankk;
 int findP(int a)
 {
 	if (parent[a] == a)
@@ -9,10 +9,11 @@ int findP(int a)
 void unionn(int a, int b) {
 	a = findP(a);
 	b = findP(b);
-	// parent[a] = b;
-	if (a != b) {
+if (a != b) {
 		if (rankk[a] < rankk[b])
-			parent[a] = b, rankk[b] += a;
-		else
-			parent[b] = a, rankk[a] += b;
-	}
+			parent[a] = b;
+		else if(rankk[b]<rankk[a])
+			parent[b] = a;
+        else
+            parent[a]=b,rankk[b]++;
+}}
