@@ -1,70 +1,92 @@
-vector<int> seg;
-vector<int>lazy;
-
-void build(int ind, int low, int high, int arr[]) {
-	if (low == high) {
-		seg[ind] = arr[low];
-		return;
+class ST {
+	vector<ll> seg, lazy;
+public:
+	ST(int n) {
+		seg.resize(4 * n);
+		lazy.resize(4 * n);
 	}
-
-	int mid = (low + high) / 2;
-	build(2 * ind + 1, low, mid, arr);
-	build(2 * ind + 2, mid + 1, high, arr);
-	seg[ind] = min(seg[2 * ind + 1], seg[2 * ind + 2]);
-}
-
-int querySum(int ind, int low, int high, int l, int r) {
-		if(lazy[ind]!=0)
-	{
-		seg[ind]+=(high-low+1)*lazy[ind];
-		if(low!=high)
-		{
-			lazy[2*ind+1]+=lazy[ind];
-			lazy[2*ind+2]+=lazy[ind];
+public:
+	void build(int ind, int low, int high, vector<ll>&arr) {
+		if (low == high) {
+			seg[ind] = arr[low];
+			return;
 		}
-		lazy[ind]=0;
+		int mid = (low + high) >> 1;
+		build(2 * ind + 1, low, mid, arr);
+		build(2 * ind + 2, mid + 1, high, arr);
+		seg[ind] = seg[2 * ind + 1] + seg[2 * ind + 2];
 	}
+public:
+	void update(int ind, int low, int high, int l, int r,
+	            int val) {
+		// update the previous remaining updates
+		// and propogate downwards
+		if (lazy[ind] != 0) {
+			seg[ind] += (high - low + 1) * lazy[ind];
+			// propogate the lazy update downwards
+			// for the remaining nodes to get updated
+			if (low != high) {
+				lazy[2 * ind + 1] += lazy[ind];
+				lazy[2 * ind + 2] += lazy[ind];
+			}
 
-	// no overlap
-	// l r low high or low high l r
-
-	if (r < low || high < l ||low>high) return 0;
-
-	// complete overlap
-	// [l low high r]
-	if (low >= l && high <= r) return seg[ind];
-
-	int mid = (low + high) >> 1;
-	int left = querySum(2 * ind + 1, low, mid, l, r);
-	int right = querySum(2 * ind + 2, mid + 1, high, l, r);
-	return (left+ right);
-}
-void rangeupdate(int ind, int low, int high, int l,int r, int val) {
-	if(lazy[ind]!=0)
-	{
-		seg[ind]+=(high-low+1)*lazy[ind];
-		if(low!=high)
-		{
-			lazy[2*ind+1]+=lazy[ind];
-			lazy[2*ind+2]+=lazy[ind];
+			lazy[ind] = 0;
 		}
-		lazy[ind]=0;
-	}
-	if(r<low ||l>high ||low>high)
-		return ;
-	if(low>=l && high <=r)
-	{
-		seg[ind]+=(high-low+1)*val;
-		if(low!=high)
-		{
-			lazy[2*ind+1]+=lazy[ind];
-			lazy[2*ind+2]+=lazy[ind];
-		}
-		return;
-	}
-	int mid=(low+high)>>1;
-	rangeupdate(2*ind+1,low,mid,l,r,val);
-	rangeupdate(2*ind+2,mid+1,high,l,r,val);
-	seg[ind]=seg[2*ind+1]+seg[2*ind+2];
 
-}
+		// no overlap
+		// we don't do anything and return
+		// low high l r or l r low high
+		if (high < l or r < low) {
+			return;
+		}
+
+		// complete overlap
+		// l low high r
+		if (low >= l && high <= r) {
+			seg[ind] += (high - low + 1) * val;
+			// if a leaf node, it will have childrens
+			if (low != high) {
+				lazy[2 * ind + 1] += val;
+				lazy[2 * ind + 2] += val;
+			}
+			return;
+		}
+		// last case has to be no overlap case
+		int mid = (low + high) >> 1;
+		update(2 * ind + 1, low, mid, l, r, val);
+		update(2 * ind + 2, mid + 1, high, l, r, val);
+		seg[ind] = seg[2 * ind + 1] + seg[2 * ind + 2];
+	}
+public:
+	ll query(int ind, int low, int high, int l, int r) {
+
+		// update if any updates are remaining
+		// as the node will stay fresh and updated
+		if (lazy[ind] != 0) {
+			seg[ind] += (high - low + 1) * lazy[ind];
+			// propogate the lazy update downwards
+			// for the remaining nodes to get updated
+			if (low != high) {
+				lazy[2 * ind + 1] += lazy[ind];
+				lazy[2 * ind + 2] += lazy[ind];
+			}
+
+			lazy[ind] = 0;
+		}
+
+		// no overlap return 0;
+		if (high < l or r < low) {
+			return 0;
+		}
+
+		// complete overlap
+		if (low >= l && high <= r) return seg[ind];
+
+		int mid = (low + high) >> 1;
+		ll left = query(2 * ind + 1, low, mid, l, r);
+		ll right = query(2 * ind + 2, mid + 1, high, l, r);
+		return left + right;
+	}
+};
+
+
