@@ -1,0 +1,23 @@
+while (st < q[i][0])
+		{
+			mp[ar[st]]--;
+			if (mp[ar[st]] == 0)
+				mp.erase(ar[st]);
+			st++;
+		}
+		while (st > q[i][0])
+		{
+			mp[ar[st - 1]]++;
+			st--;
+		}
+		while (en <= q[i][1])
+		{
+			mp[ar[en]]++;
+			en++;
+		}
+		while (en > q[i][1] + 1)
+		{	mp[ar[en - 1]]--;
+			if (mp[ar[en - 1]] == 0)
+				mp.erase(ar[en - 1]);
+			en--;
+		}
