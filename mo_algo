@@ -1,23 +1,21 @@
-while (st < q[i][0])
-		{
-			mp[ar[st]]--;
-			if (mp[ar[st]] == 0)
-				mp.erase(ar[st]);
-			st++;
-		}
-		while (st > q[i][0])
-		{
-			mp[ar[st - 1]]++;
-			st--;
-		}
-		while (en <= q[i][1])
-		{
-			mp[ar[en]]++;
-			en++;
-		}
-		while (en > q[i][1] + 1)
-		{	mp[ar[en - 1]]--;
-			if (mp[ar[en - 1]] == 0)
-				mp.erase(ar[en - 1]);
-			en--;
-		}
+
+    while(curr_l > q.L)
+    {
+        curr_l--;
+        Add(ar[curr_l]);
+    }
+    while(curr_r < q.R)
+    {
+        curr_r++;
+        Add(ar[curr_r]);
+    }
+	while(curr_l < q.L)
+    {
+        Remove(ar[curr_l]);
+        curr_l++;
+    }
+    while(curr_r > q.R)
+    {
+        Remove(ar[curr_r]);
+        curr_r--;
+    }
