@@ -1,6 +1,6 @@
 class SEG {
 public:
-	vector<pair<ll, ll>> seg;
+	vector<ll> seg;
 	SEG(int n) {
 		seg.resize(4 * n);
 	}
